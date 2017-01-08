@@ -12,15 +12,14 @@ import static org.junit.Assert.*;
  */
 public class UserDaoTest {
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        ConnectionMaker connectionMaker = new DConnectionManager();
-        UserDao dao = new UserDao(connectionMaker);
+        UserDao dao = new DaoFactory().userDao();
 
         User user = new User();
         user.setId("whiteship");
         user.setName("BAIK");
         user.setPassword("abc");
 
-        dao.add( user );
+//        dao.add( user );
 
         System.out.println(user.getId() + " registered.");
 
