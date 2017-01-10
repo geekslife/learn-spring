@@ -1,5 +1,6 @@
 package springbook.user.dao;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import springbook.user.domain.User;
 
 import java.sql.*;
@@ -9,13 +10,20 @@ import java.sql.*;
  */
 public class UserDao {
     ConnectionMaker connectionMaker;
+    private User user;
+    private Connection c;
+
+    public UserDao() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
+        this.connectionMaker = context.getBean("connectionMaker", ConnectionMaker.class);
+    }
 
     public UserDao(ConnectionMaker connectionMaker) {
         this.connectionMaker = connectionMaker;
     }
 
     public void add(User user) throws ClassNotFoundException, SQLException {
-        Connection c = connectionMaker.makeNewConnection();
+        c = connectionMaker.makeNewConnection();
         PreparedStatement ps =  c.prepareStatement("insert into users(id,name,password) values(?,?,?)");
         ps.setString(1,user.getId());
         ps.setString(2, user.getName());
@@ -26,21 +34,21 @@ public class UserDao {
     }
 
     public User get(String id) throws ClassNotFoundException, SQLException {
-        Connection c = connectionMaker.makeNewConnection();
-        PreparedStatement ps =  c.prepareStatement("select * from users where id = ? " );
+        this.c = connectionMaker.makeNewConnection();
+        PreparedStatement ps =  this.c.prepareStatement("select * from users where id = ? " );
         ps.setString(1,id);
 
         ResultSet rs = ps.executeQuery();
         rs.next();
-        User user = new User();
-        user.setId( rs.getString("id"));
-        user.setName( rs.getString("name"));
-        user.setPassword(rs.getString("password"));
+        this.user = new User();
+        this.user.setId( rs.getString("id"));
+        this.user.setName( rs.getString("name"));
+        this.user.setPassword(rs.getString("password"));
 
         rs.close();
         ps.close();
-        c.close();
+        this.c.close();
 
-        return user;
+        return this.user;
     }
 }
