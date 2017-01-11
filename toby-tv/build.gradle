@@ -1,0 +1,29 @@
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+
+sourceCompatibility = 1.8
+
+buildscript {
+    ext {
+        springBootVersion = '1.4.3.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.slf4j:slf4j-api:1.7.22"
+    compile 'ch.qos.logback:logback-classic:1.1.8'
+    compileOnly "org.projectlombok:lombok:1.16.12"
+
+    compile 'org.springframework.boot:spring-boot-starter'
+    compile 'org.reactivestreams:reactive-streams:1.0.0'
+}
