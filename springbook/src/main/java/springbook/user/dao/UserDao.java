@@ -3,27 +3,24 @@ package springbook.user.dao;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import springbook.user.domain.User;
 
+import javax.sql.DataSource;
 import java.sql.*;
 
 /**
  * Created by geekslife on 2017. 1. 8..
  */
 public class UserDao {
-    ConnectionMaker connectionMaker;
+    DataSource dataSource;
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     private User user;
     private Connection c;
 
-    public UserDao() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
-        this.connectionMaker = context.getBean("connectionMaker", ConnectionMaker.class);
-    }
-
-    public UserDao(ConnectionMaker connectionMaker) {
-        this.connectionMaker = connectionMaker;
-    }
-
     public void add(User user) throws ClassNotFoundException, SQLException {
-        c = connectionMaker.makeNewConnection();
+        c = dataSource.getConnection();
         PreparedStatement ps =  c.prepareStatement("insert into users(id,name,password) values(?,?,?)");
         ps.setString(1,user.getId());
         ps.setString(2, user.getName());
@@ -34,7 +31,7 @@ public class UserDao {
     }
 
     public User get(String id) throws ClassNotFoundException, SQLException {
-        this.c = connectionMaker.makeNewConnection();
+        c = dataSource.getConnection();
         PreparedStatement ps =  this.c.prepareStatement("select * from users where id = ? " );
         ps.setString(1,id);
 

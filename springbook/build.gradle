@@ -24,4 +24,6 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter'
     compile 'org.springframework.boot:spring-boot-starter-test'
     compile group: 'com.h2database', name: 'h2', version: '1.4.190'
+    compile group: 'org.springframework', name: 'spring-jdbc', version: '4.3.5.RELEASE'
+
 }
