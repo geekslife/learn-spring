@@ -37,15 +37,33 @@ public class UserDao {
 
         ResultSet rs = ps.executeQuery();
         rs.next();
-        this.user = new User();
-        this.user.setId( rs.getString("id"));
-        this.user.setName( rs.getString("name"));
-        this.user.setPassword(rs.getString("password"));
+        this.user = new User("id","name","passw");
 
         rs.close();
         ps.close();
         this.c.close();
 
         return this.user;
+    }
+
+    public void deleteAll() throws SQLException {
+        c = dataSource.getConnection();
+
+        PreparedStatement ps =  this.c.prepareStatement("delete users" );
+        ps.executeUpdate();
+        ps.close();
+
+        c.close();
+    }
+
+    public int getCount() throws SQLException {
+        try(Connection c = dataSource.getConnection()){
+
+            PreparedStatement ps = c.prepareStatement("select count(*) from users");
+
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1);
+        }
     }
 }

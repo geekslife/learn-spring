@@ -3,3 +3,4 @@ create table users (
   name VARCHAR (20) NOT NULL,
   password VARCHAR(10) NOT NULL
 )
+

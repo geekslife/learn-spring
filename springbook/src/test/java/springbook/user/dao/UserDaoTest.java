@@ -27,10 +27,40 @@ public class UserDaoTest {
         user.setPassword("springno1");
 
         dao.add( user );
+        assertThat(dao.getCount(),is(1));
 
         User user2 = dao.get(user.getId());
 
         assertThat(user2.getName(), is(user.getName()));
+        dao.deleteAll();
+        assertThat(dao.getCount(),is(0));
+    }
+
+    @Test
+    public void count() throws SQLException, ClassNotFoundException {
+        ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
+        UserDao dao = context.getBean("userDao",UserDao.class);
+
+        assertThat(dao.getCount(), is(0));
+
+        User user = new User("hyumee","박성철", "aa");
+        user.setId("gyumee");
+        user.setName("박성철");
+        user.setPassword("springno1");
+        dao.add(user);
+
+        assertThat(dao.getCount(), is(1));
+
+
+        User user2 = new User();
+        user2.setId("geekslife");
+        user2.setName("ㅣ  ");
+        user2.setPassword("xxx");
+        dao.add(user2);
+
+        assertThat(dao.getCount(), is(2));
+
+        dao.deleteAll();
     }
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
