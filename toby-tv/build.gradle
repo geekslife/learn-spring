@@ -3,6 +3,7 @@ apply plugin: 'org.springframework.boot'
 
 sourceCompatibility = 1.8
 
+/*
 buildscript {
     ext {
         springBootVersion = '1.4.3.RELEASE'
@@ -14,9 +15,13 @@ buildscript {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
+*/
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://repo.spring.io/libs-snapshot'
+    }
 }
 
 dependencies {
@@ -25,5 +30,7 @@ dependencies {
     compileOnly "org.projectlombok:lombok:1.16.12"
 
     compile 'org.springframework.boot:spring-boot-starter'
+    compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.reactivestreams:reactive-streams:1.0.0'
+    compile "io.projectreactor:reactor-core:3.0.4.RELEASE"
 }

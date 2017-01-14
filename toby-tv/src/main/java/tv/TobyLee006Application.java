@@ -1,69 +1,44 @@
 package tv;
 
-import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Created by geekslife on 2017. 1. 9..
+ * Created by geekslife on 2017. 1. 15..
  */
-@Slf4j
+@SpringBootApplication
 public class TobyLee006Application {
-    public static void main(String[] args) {
-        Publisher<Integer> pub = new Publisher<Integer>() {
-            Iterable<Integer> iter = Stream.iterate(1, a->a+1).limit(10).collect(Collectors.toList());
+    @RestController
+    public static class Controller {
+        @RequestMapping("/hello")
+        public Publisher<String> hello(String name) {
+            return new Publisher<String> () {
 
-            @Override
-            public void subscribe(Subscriber<? super Integer> sub) {
-                sub.onSubscribe(new Subscription() {
-                    @Override
-                    public void request(long n) {
-                        try {
-                            iter.forEach(s -> sub.onNext(s));
-                            sub.onComplete();
-                        } catch (Throwable t) {
-                            sub.onError(t);
+                @Override
+                public void subscribe(Subscriber<? super String> s) {
+                    s.onSubscribe(new Subscription() {
+                        @Override
+                        public void request(long n) {
+                            s.onNext("Hello, "+name);
+                            s.onComplete();
                         }
-                    }
 
-                    @Override
-                    public void cancel() {
+                        @Override
+                        public void cancel() {
 
-                    }
-                });
-            }
-        };
+                        }
+                    });
+                }
+            };
+        }
 
-        Subscriber<Integer> sub = new Subscriber<Integer>() {
-            @Override
-            public void onSubscribe(Subscription s) {
-                log.debug("onSubscribe:");
-                s.request(1);
-            }
-
-            @Override
-            public void onNext(Integer i) {
-                log.debug("onNext:{}", i);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                log.debug("onError:{}", t);
-            }
-
-            @Override
-            public void onComplete() {
-                log.debug("onComplete");
-            }
-        };
-
-        pub.subscribe(sub);
     }
-
+    public static void main(String[] args) {
+        SpringApplication.run(TobyLee006Application.class,args);
+    }
 }
