@@ -13,16 +13,14 @@ import java.sql.*;
 public class UserDao {
 
     JdbcContext jdbcContext;
+    DataSource dataSource;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+        jdbcContext = new JdbcContext();
+        jdbcContext.setDataSource(this.dataSource);
     }
 
-    DataSource dataSource;
-
-    public void setJdbcContext(JdbcContext jdbcContext) {
-        this.jdbcContext = jdbcContext;
-    }
 
     private User user;
     private Connection c;
