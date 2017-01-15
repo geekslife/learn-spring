@@ -1,10 +1,17 @@
 package springbook.user.dao;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.util.ApplicationContextTestUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import springbook.user.domain.User;
 
 import java.sql.SQLException;
@@ -15,25 +22,44 @@ import static org.junit.Assert.*;
 /**
  * Created by geekslife on 2017. 1. 8..
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {DaoFactory.class})
 public class UserDaoTest {
-    @Test
+    @Autowired ApplicationContext context;
+    @Autowired UserDao dao;
+    User user1, user2, user3;
+
+    @Before
+    public void setUp() {
+        user1 = new User("gyumee","박성철","springno1");
+        user2 = new User("geekslife","haes","springno2");
+        user3 = new User("lulumeme","자자자","springno3");
+    }
+
+    @After
+    public void tearDown() throws SQLException {
+        dao.deleteAll();
+    }
+
+    @Test(expected = EmptyResultDataAccessException.class)
     public void addAndGet() throws SQLException, ClassNotFoundException {
-        ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
-        UserDao dao = context.getBean("userDao",UserDao.class);
 
-        User user = new User();
-        user.setId("gyumee");
-        user.setName("박성철");
-        user.setPassword("springno1");
+        assertThat(dao.getCount(),is(0));
+        dao.add( user1 );
+        dao.add( user2 );
+        assertThat(dao.getCount(),is(2));
 
-        dao.add( user );
-        assertThat(dao.getCount(),is(1));
+        User userget1 = dao.get(user1.getId());
 
-        User user2 = dao.get(user.getId());
+        assertThat(userget1.getName(), is(user1.getName()));
+        assertThat(userget1.getPassword(), is(user1.getPassword()));
 
-        assertThat(user2.getName(), is(user.getName()));
+        User userget2 = dao.get(user2.getId());
+        assertThat(userget2.getPassword(), is(user2.getPassword()));
         dao.deleteAll();
         assertThat(dao.getCount(),is(0));
+
+        dao.get("foo");
     }
 
     @Test
@@ -43,19 +69,11 @@ public class UserDaoTest {
 
         assertThat(dao.getCount(), is(0));
 
-        User user = new User("hyumee","박성철", "aa");
-        user.setId("gyumee");
-        user.setName("박성철");
-        user.setPassword("springno1");
-        dao.add(user);
+        dao.add(user1);
 
         assertThat(dao.getCount(), is(1));
 
 
-        User user2 = new User();
-        user2.setId("geekslife");
-        user2.setName("ㅣ  ");
-        user2.setPassword("xxx");
         dao.add(user2);
 
         assertThat(dao.getCount(), is(2));
