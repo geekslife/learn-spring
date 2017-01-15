@@ -11,17 +11,24 @@ import java.sql.*;
  * Created by geekslife on 2017. 1. 8..
  */
 public class UserDao {
-    DataSource dataSource;
+
+    JdbcContext jdbcContext;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    DataSource dataSource;
+
+    public void setJdbcContext(JdbcContext jdbcContext) {
+        this.jdbcContext = jdbcContext;
     }
 
     private User user;
     private Connection c;
 
     public void add(User user) throws ClassNotFoundException, SQLException {
-        jdbcContextWithStatementStrategy(
+        jdbcContext.workWithStatementStrategy(
                 c -> {
                         PreparedStatement ps = c.prepareStatement(
                                 "insert into users(id,name,password) values(?,?,?)");
@@ -34,7 +41,7 @@ public class UserDao {
     }
 
     public User get(String id) throws ClassNotFoundException, SQLException {
-        c = dataSource.getConnection();
+        c = jdbcContext.getConnection();
         PreparedStatement ps =  this.c.prepareStatement("select * from users where id = ? " );
         ps.setString(1,id);
 
@@ -52,22 +59,8 @@ public class UserDao {
         return this.user;
     }
 
-    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
-        PreparedStatement  ps=null;
-        try {
-            c = dataSource.getConnection();
-            ps = stmt.makePreparedStatement(c);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (ps!=null) { try { ps.close(); } catch (SQLException e) { } }
-            if (c!= null) { try { c.close(); } catch (SQLException e) {} }
-        }
-    }
-
     public void deleteAll() throws SQLException {
-        jdbcContextWithStatementStrategy( c -> c.prepareStatement("delete from users") );
+        jdbcContext.workWithStatementStrategy( c -> c.prepareStatement("delete from users") );
     }
 
     public int getCount() throws SQLException {
@@ -75,7 +68,7 @@ public class UserDao {
         PreparedStatement ps = null;
         Connection c = null;
         try{
-            c = dataSource.getConnection();
+            c = jdbcContext.getConnection();
             ps = c.prepareStatement("select count(*) from users");
 
             rs = ps.executeQuery();
