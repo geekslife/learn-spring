@@ -11,12 +11,28 @@ import java.sql.SQLException;
 public class JdbcContext {
     DataSource dataSource;
 
+    // 코드에 의한 DI..
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     public Connection getConnection() throws SQLException { return dataSource.getConnection(); }
 
+    // 전략 패턴의 익명 클래스를 은닉..
+    public void executeSql(final String query, String... args) throws SQLException {
+        workWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+                PreparedStatement ps = c.prepareStatement(query);
+                for( int i=0; i < args.length; i++ ) {
+                    ps.setString(i+1, args[i]);
+                }
+                return ps;
+            }
+        });
+    }
+
+    // 전략 패턴..
     public void workWithStatementStrategy(StatementStrategy stmt) throws SQLException {
         Connection c = null;
         PreparedStatement ps=null;
@@ -31,4 +47,5 @@ public class JdbcContext {
             if (c!= null) { try { c.close(); } catch (SQLException e) {} }
         }
     }
+
 }
