@@ -2,91 +2,53 @@ package springbook.user.dao;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import springbook.user.domain.User;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.List;
 
 /**
  * Created by geekslife on 2017. 1. 8..
  */
 public class UserDao {
-
-    JdbcContext jdbcContext;
-    DataSource dataSource;
-
     public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-        jdbcContext = new JdbcContext();
-        jdbcContext.setDataSource(this.dataSource);
+        jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+    JdbcTemplate jdbcTemplate;
 
-    private User user;
-    private Connection c;
+    RowMapper<User> userMapper =
+            (rs, rowNum) -> {
+                User user = new User();
+                user.setId(rs.getString("id"));
+                user.setName(rs.getString("name"));
+                user.setPassword(rs.getString("password"));
+                return user;
+            };
 
     public void add(User user) throws ClassNotFoundException, SQLException {
-        jdbcContext.executeSql( "insert into users(id,name,password) values(?,?,?)",
-                    user.getId(), user.getName(), user.getPassword() );
-//        jdbcContext.workWithStatementStrategy(
-//                c -> {
-//                        PreparedStatement ps = c.prepareStatement(
-//                                "insert into users(id,name,password) values(?,?,?)");
-//                        ps.setString(1, user.getId());
-//                        ps.setString(2, user.getName());
-//                        ps.setString(3, user.getPassword());
-//                        return ps;
-//                }
-//        );
+        jdbcTemplate.update("insert into users (id, name, password) values (?,?,?)",
+                user.getId(), user.getName(), user.getPassword());
     }
 
     public void deleteAll() throws SQLException {
-        jdbcContext.executeSql("delete from users");
+        jdbcTemplate.update("delete from users");
     }
 
 
     public User get(String id) throws ClassNotFoundException, SQLException {
-        c = jdbcContext.getConnection();
-        PreparedStatement ps =  this.c.prepareStatement("select * from users where id = ? " );
-        ps.setString(1,id);
-
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()) {
-            this.user = new User(rs.getString(1), rs.getString(2), rs.getString(3));
-        } else {
-            throw new EmptyResultDataAccessException(1);
-        }
-
-        rs.close();
-        ps.close();
-        this.c.close();
-
-        return this.user;
+        return jdbcTemplate.queryForObject(
+                "select * from users where id=?", new Object[] { id }, userMapper);
     }
 
     public int getCount() throws SQLException {
-        ResultSet rs = null;
-        PreparedStatement ps = null;
-        Connection c = null;
-        try{
-            c = jdbcContext.getConnection();
-            ps = c.prepareStatement("select count(*) from users");
+        return jdbcTemplate.queryForObject("select count(*) from users", Integer.class);
+    }
 
-            rs = ps.executeQuery();
-            rs.next();
-            return rs.getInt(1);
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (rs!=null) {
-                try { rs.close(); } catch (SQLException e) {}
-            }
-            if (ps!=null) {
-                try { ps.close(); } catch (SQLException e) {}
-            }
-            if (c!= null) {
-                try { c.close(); } catch (SQLException e) {}
-            }
-        }
+    public List<User> getAll() {
+        return jdbcTemplate.query("select * from users order by id", userMapper);
     }
 }
